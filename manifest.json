@@ -1,0 +1,23 @@
+{
+  "manifest_version": 3,
+  "name": "DevOps Effects",
+  "version": "1.0",
+
+  "permissions": ["storage"],
+
+  "host_permissions": [
+    "https://dev.azure.com/*"
+  ],
+
+  "content_scripts": [
+    {
+      "matches": [
+        "https://dev.azure.com/*/pullrequests*"
+      ],
+      "js": ["colored-prs.js"],
+      "run_at": "document_idle"
+    }
+  ],
+
+  "options_page": "options.html"
+}
