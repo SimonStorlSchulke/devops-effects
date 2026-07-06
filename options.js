@@ -1,45 +1,53 @@
-const DEFAULT_RULES = [
-    {
-        match: "bug",
-        badgeColor: "#96652654",
-    },
-    {
-        match: "master",
-        badgeColor: "#ff000044",
-    },
-    {
-        match: "hotfix",
-        badgeColor: "#ff000077",
-    },
-    {
-        match: "hold",
-        badgeColor: "#e100ff91",
-    }
-];
+const defaults = globalThis.DEVOPS_DEFAULTS || {
+    tagRules: [],
+    prTargetRules: [],
+};
 
-const tbody = document.getElementById("rules");
+const DEFAULT_TAG_RULES = defaults.tagRules;
+const DEFAULT_PR_TARGET_RULES = defaults.prTargetRules;
+
+const tagRulesBody = document.getElementById("rules");
+const prTargetRulesBody = document.getElementById("prTargetRules");
 const status = document.getElementById("status");
 
 chrome.storage.sync.get(
-    { rules: DEFAULT_RULES },
-    ({ rules }) => render(rules)
+    {
+        rules: DEFAULT_TAG_RULES,
+        prTargetRules: DEFAULT_PR_TARGET_RULES,
+    },
+    ({ rules, prTargetRules }) => {
+        renderTagRules(rules);
+        renderPrTargetRules(prTargetRules);
+    }
 );
 
 document.getElementById("add").addEventListener("click", () => {
-    const rules = getRules();
+    const rules = getTagRules();
 
     rules.push({
         match: "",
         badgeColor: "#ffffff",
     });
 
-    render(rules);
+    renderTagRules(rules);
     save();
 });
 
-function render(rules) {
+document.getElementById("addTarget").addEventListener("click", () => {
+    const prTargetRules = getPrTargetRules();
 
-    tbody.innerHTML = "";
+    prTargetRules.push({
+        match: "",
+        targetColor: "",
+    });
+
+    renderPrTargetRules(prTargetRules);
+    save();
+});
+
+function renderTagRules(rules) {
+
+    tagRulesBody.innerHTML = "";
 
     for (const rule of rules) {
 
@@ -60,22 +68,58 @@ function render(rules) {
             </td>
         `;
 
-        tbody.appendChild(tr);
+        tagRulesBody.appendChild(tr);
     }
 
-    tbody.querySelectorAll("input").forEach(i =>
+    tagRulesBody.querySelectorAll("input").forEach(i =>
         i.addEventListener("input", save));
 
-    tbody.querySelectorAll(".delete").forEach(btn =>
+    tagRulesBody.querySelectorAll(".delete").forEach(btn =>
         btn.addEventListener("click", e => {
             e.target.closest("tr").remove();
             save();
         }));
 }
 
-function getRules() {
+function renderPrTargetRules(prTargetRules) {
 
-    return [...tbody.querySelectorAll("tr")].map(tr => ({
+    prTargetRulesBody.innerHTML = "";
+
+    for (const rule of prTargetRules) {
+
+        const tr = document.createElement("tr");
+
+        tr.innerHTML = `
+            <td>
+                <input class="match" type="text" value="${rule.match}">
+            </td>
+
+            <td>
+                <input class="target" type="color"
+                    value="${toColor(rule.targetColor)}">
+            </td>
+
+            <td>
+                <button class="delete">Delete</button>
+            </td>
+        `;
+
+        prTargetRulesBody.appendChild(tr);
+    }
+
+    prTargetRulesBody.querySelectorAll("input").forEach(i =>
+        i.addEventListener("input", save));
+
+    prTargetRulesBody.querySelectorAll(".delete").forEach(btn =>
+        btn.addEventListener("click", e => {
+            e.target.closest("tr").remove();
+            save();
+        }));
+}
+
+function getTagRules() {
+
+    return [...tagRulesBody.querySelectorAll("tr")].map(tr => ({
 
         match:
             tr.querySelector(".match").value.trim(),
@@ -86,11 +130,25 @@ function getRules() {
     }));
 }
 
+function getPrTargetRules() {
+
+    return [...prTargetRulesBody.querySelectorAll("tr")].map(tr => ({
+
+        match:
+            tr.querySelector(".match").value.trim(),
+
+        targetColor:
+            tr.querySelector(".target").value.trim(),
+
+    }));
+}
+
 function save() {
 
-    const rules = getRules();
+    const rules = getTagRules();
+    const prTargetRules = getPrTargetRules();
 
-    chrome.storage.sync.set({ rules }, () => {
+    chrome.storage.sync.set({ rules, prTargetRules }, () => {
 
         status.textContent = "Saved";
 

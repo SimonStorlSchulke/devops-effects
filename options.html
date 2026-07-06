@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="utf-8">
     <title>PR Colors Settings</title>
@@ -47,6 +47,7 @@
 
 <h1>PR Colors</h1>
 
+<h2>Tag Rules</h2>
 <table>
     <thead>
     <tr>
@@ -63,8 +64,26 @@
     <button id="add">Add Rule</button>
 </p>
 
+<h2>PR Target Rules</h2>
+<table>
+    <thead>
+    <tr>
+        <th>Target branch text</th>
+        <th>Highlight color</th>
+        <th></th>
+    </tr>
+    </thead>
+
+    <tbody id="prTargetRules"></tbody>
+</table>
+
+<p>
+    <button id="addTarget">Add Target Rule</button>
+</p>
+
 <div id="status"></div>
 
+<script src="defaults.js"></script>
 <script src="options.js"></script>
 
 </body>

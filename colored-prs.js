@@ -1,41 +1,51 @@
-const DEFAULT_RULES = [
-    {
-        match: "bug",
-        badgeColor: "#96652654",
-    },
-    {
-        match: "master",
-        badgeColor: "#ff000044",
-    },
-    {
-        match: "hotfix",
-        badgeColor: "#ff000077",
-    },
-    {
-        match: "hold",
-        badgeColor: "#e100ff91",
-    }
-];
+const defaults = globalThis.DEVOPS_DEFAULTS || {
+    tagRules: [],
+    prTargetRules: [],
+};
 
-let rules = DEFAULT_RULES;
+const DEFAULT_TAG_RULES = defaults.tagRules;
+const DEFAULT_PR_TARGET_RULES = defaults.prTargetRules;
+
+let rules = DEFAULT_TAG_RULES;
+let prTargetRules = DEFAULT_PR_TARGET_RULES;
 
 chrome.storage.sync.get(
-    { rules: DEFAULT_RULES },
-    ({ rules: storedRules }) => {
+    {
+        rules: DEFAULT_TAG_RULES,
+        prTargetRules: DEFAULT_PR_TARGET_RULES,
+    },
+    ({ rules: storedRules, prTargetRules: storedPrTargetRules }) => {
         rules = storedRules;
+        prTargetRules = storedPrTargetRules;
         scheduleUpdate();
     }
 );
 
 chrome.storage.onChanged.addListener((changes, area) => {
-    if (area === "sync" && changes.rules) {
-        rules = changes.rules.newValue || DEFAULT_RULES;
+    if (area !== "sync") return;
+
+    if (changes.rules) {
+        rules = changes.rules.newValue || DEFAULT_TAG_RULES;
+    }
+
+    if (changes.prTargetRules) {
+        prTargetRules = changes.prTargetRules.newValue || DEFAULT_PR_TARGET_RULES;
+    }
+
+    if (changes.rules || changes.prTargetRules) {
         scheduleUpdate();
     }
 });
 
-function applyColors() {
-    document.querySelectorAll(".bolt-pill").forEach(pill => {
+function triggerEffects() {
+    const prCard = document.querySelector(".repos-pr-section-card");
+    if(prCard) {
+        applyPrColors(prCard);
+    }
+}
+
+function applyPrColors(prCard) {
+    prCard.querySelectorAll(".bolt-pill").forEach(pill => {
         // Reset previous styling
         pill.style.backgroundColor = "";
 
@@ -44,14 +54,15 @@ function applyColors() {
             row.style.backgroundColor = "";
         }
 
-        const text = pill.textContent.toLowerCase();
+        const text = (pill.textContent || "").toLowerCase();
 
         for (const rule of rules) {
             if (!rule.match) continue;
 
             if (text.includes(rule.match.toLowerCase())) {
                 if (rule.badgeColor) {
-                    pill.style.backgroundColor = rule.badgeColor;
+                    const reducedOpacity = rule.badgeColor + "66";
+                    pill.style.backgroundColor = reducedOpacity;
                 }
                 break;
             }
@@ -59,13 +70,19 @@ function applyColors() {
     });
 
     document.querySelectorAll(".monospaced-xs").forEach(prTarget => {
-        // Reset previous styling
         prTarget.style.backgroundColor = "";
 
-        const text = prTarget.textContent.toLowerCase();
+        const text = (prTarget.textContent || "").toLowerCase();
 
-        if (text.includes('master'.toLowerCase())) {
-            prTarget.style.backgroundColor = '#d60a0a86';
+        for (const rule of prTargetRules) {
+            if (!rule.match) continue;
+
+            if (text.includes(rule.match.toLowerCase())) {
+                if (rule.targetColor) {
+                    prTarget.style.backgroundColor = rule.targetColor;
+                }
+                break;
+            }
         }
     });
 }
@@ -79,7 +96,7 @@ function scheduleUpdate() {
 
     setTimeout(() => {
         scheduled = false;
-        applyColors();
+        triggerEffects();
     }, 100);
 }
 
