@@ -34,7 +34,7 @@ const DEVOPS_DEFAULTS = {
     prNameRules: [
         {
             match: "feature",
-            targetColor: "#00000076",
+            targetColor: "#3cbe93",
         },
     ],
 };

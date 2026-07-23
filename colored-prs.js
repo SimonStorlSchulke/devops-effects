@@ -78,7 +78,8 @@ function applyPrColors(prCard) {
         for (const rule of prNameRules) {
             const rowTextStart = pr.innerText.trim().slice(0, rule.match.length).toLowerCase();
             if(rowTextStart === rule.match.toLowerCase()) {
-                pr.style.backgroundColor = rule.targetColor;
+                const reducedOpacity = rule.targetColor + "55";
+                pr.style.backgroundColor = reducedOpacity;
             }
         }
     });

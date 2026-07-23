@@ -75,8 +75,7 @@ function renderPrNameRules(rules) {
             </td>
 
             <td>
-                <input class="target" type="color"
-                    value="${toColor(rule.targetColor)}">
+                <input class="target" type="color" alpha value="${toColor(rule.targetColor)}">
             </td>
 
             <td>
@@ -111,8 +110,7 @@ function renderTagRules(rules) {
             </td>
 
             <td>
-                <input class="badge" type="color"
-                    value="${toColor(rule.badgeColor)}">
+                <input class="badge" type="color" alpha value="${toColor(rule.badgeColor)}">
             </td>
 
             <td>
@@ -147,8 +145,7 @@ function renderPrTargetRules(prTargetRules) {
             </td>
 
             <td>
-                <input class="target" type="color"
-                    value="${toColor(rule.targetColor)}">
+                <input class="target" type="color" alpha value="${toColor(rule.targetColor)}">
             </td>
 
             <td>
@@ -233,3 +230,4 @@ function toColor(value) {
 
     return value.substring(0, 7);
 }
+
