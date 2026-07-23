@@ -5,8 +5,10 @@ const defaults = globalThis.DEVOPS_DEFAULTS || {
 
 const DEFAULT_TAG_RULES = defaults.tagRules;
 const DEFAULT_PR_TARGET_RULES = defaults.prTargetRules;
+const DEFAULT_PR_NAME_RULES = defaults.prNameRules;
 
 const tagRulesBody = document.getElementById("rules");
+const prNameRulesBody = document.getElementById("prNameRules");
 const prTargetRulesBody = document.getElementById("prTargetRules");
 const status = document.getElementById("status");
 
@@ -14,10 +16,12 @@ chrome.storage.sync.get(
     {
         rules: DEFAULT_TAG_RULES,
         prTargetRules: DEFAULT_PR_TARGET_RULES,
+        prNameRules: DEFAULT_PR_NAME_RULES,
     },
-    ({ rules, prTargetRules }) => {
+    ({ rules, prTargetRules, prNameRules }) => {
         renderTagRules(rules);
         renderPrTargetRules(prTargetRules);
+        renderPrNameRules(prNameRules);
     }
 );
 
@@ -44,6 +48,54 @@ document.getElementById("addTarget").addEventListener("click", () => {
     renderPrTargetRules(prTargetRules);
     save();
 });
+
+document.getElementById("addPrName").addEventListener("click", () => {
+    const prTargetRules = getPrNameRules();
+
+    prTargetRules.push({
+        match: "",
+        targetColor: "",
+    });
+
+    renderPrNameRules(prTargetRules);
+    save();
+});
+
+function renderPrNameRules(rules) {
+
+    prNameRulesBody.innerHTML = "";
+
+    for (const rule of rules) {
+
+        const tr = document.createElement("tr");
+
+        tr.innerHTML = `
+            <td>
+                <input class="match" type="text" value="${rule.match}">
+            </td>
+
+            <td>
+                <input class="target" type="color"
+                    value="${toColor(rule.targetColor)}">
+            </td>
+
+            <td>
+                <button class="delete">Delete</button>
+            </td>
+        `;
+
+        prNameRulesBody.appendChild(tr);
+    }
+
+    prNameRulesBody.querySelectorAll("input").forEach(i =>
+        i.addEventListener("input", save));
+
+    prNameRulesBody.querySelectorAll(".delete").forEach(btn =>
+        btn.addEventListener("click", e => {
+            e.target.closest("tr").remove();
+            save();
+        }));
+}
 
 function renderTagRules(rules) {
 
@@ -143,12 +195,26 @@ function getPrTargetRules() {
     }));
 }
 
+function getPrNameRules() {
+
+    return [...prNameRulesBody.querySelectorAll("tr")].map(tr => ({
+
+        match:
+            tr.querySelector(".match").value.trim(),
+
+        targetColor:
+            tr.querySelector(".target").value.trim(),
+
+    }));
+}
+
 function save() {
 
     const rules = getTagRules();
     const prTargetRules = getPrTargetRules();
+    const prNameRules = getPrNameRules();
 
-    chrome.storage.sync.set({ rules, prTargetRules }, () => {
+    chrome.storage.sync.set({ rules, prTargetRules, prNameRules }, () => {
 
         status.textContent = "Saved";
 

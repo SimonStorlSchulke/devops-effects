@@ -9,6 +9,10 @@ const DEVOPS_DEFAULTS = {
             badgeColor: "#ff0000",
         },
         {
+            match: "main",
+            badgeColor: "#ff0000",
+        },
+        {
             match: "hotfix",
             badgeColor: "#ff0000",
         },
@@ -21,8 +25,18 @@ const DEVOPS_DEFAULTS = {
         {
             match: "master",
             targetColor: "#d60a0a",
-        }
-    ]
+        },
+        {
+            match: "main",
+            targetColor: "#d60a0a",
+        },
+    ],
+    prNameRules: [
+        {
+            match: "feature",
+            targetColor: "#00000076",
+        },
+    ],
 };
 
 globalThis.DEVOPS_DEFAULTS = DEVOPS_DEFAULTS;

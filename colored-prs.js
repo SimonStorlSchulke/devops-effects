@@ -5,18 +5,22 @@ const defaults = globalThis.DEVOPS_DEFAULTS || {
 
 const DEFAULT_TAG_RULES = defaults.tagRules;
 const DEFAULT_PR_TARGET_RULES = defaults.prTargetRules;
+const DEFAULT_PR_NAME_RULES = defaults.prNameRules;
 
 let rules = DEFAULT_TAG_RULES;
 let prTargetRules = DEFAULT_PR_TARGET_RULES;
+let prNameRules = DEFAULT_PR_NAME_RULES;
 
 chrome.storage.sync.get(
     {
         rules: DEFAULT_TAG_RULES,
         prTargetRules: DEFAULT_PR_TARGET_RULES,
+        prNameRules: DEFAULT_PR_NAME_RULES,
     },
-    ({ rules: storedRules, prTargetRules: storedPrTargetRules }) => {
+    ({ rules: storedRules, prTargetRules: storedPrTargetRules, prNameRules: storedPrNameRules }) => {
         rules = storedRules;
         prTargetRules = storedPrTargetRules;
+        prNameRules = storedPrNameRules;
         scheduleUpdate();
     }
 );
@@ -69,7 +73,17 @@ function applyPrColors(prCard) {
         }
     });
 
-    document.querySelectorAll(".monospaced-xs").forEach(prTarget => {
+    prCard.querySelectorAll("a").forEach(pr => {
+
+        for (const rule of prNameRules) {
+            const rowTextStart = pr.innerText.trim().slice(0, rule.match.length).toLowerCase();
+            if(rowTextStart === rule.match.toLowerCase()) {
+                pr.style.backgroundColor = rule.targetColor;
+            }
+        }
+    });
+
+    prCard.querySelectorAll(".monospaced-xs").forEach(prTarget => {
         prTarget.style.backgroundColor = "";
 
         const text = (prTarget.textContent || "").toLowerCase();
